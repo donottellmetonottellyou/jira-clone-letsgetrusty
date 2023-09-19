@@ -1,4 +1,6 @@
-use anyhow::Result;
+use std::fs;
+
+use anyhow::{Context, Result};
 
 use crate::models::{DBState, Epic, Status, Story};
 
@@ -13,11 +15,18 @@ struct JSONFileDatabase {
 
 impl Database for JSONFileDatabase {
     fn read_db(&self) -> Result<DBState> {
-        todo!() // read the content's of self.file_path and deserialize it using serde
+        let serialized = fs::read_to_string(&self.file_path)
+            .with_context(|| format!("Failed to read database from {}", self.file_path))?;
+        serde_json::from_str(&serialized)
+            .with_context(|| format!("Failed to deserialize:\n{serialized}\n"))
     }
 
     fn write_db(&self, db_state: &DBState) -> Result<()> {
-        todo!() // serialize db_state to json and store it in self.file_path
+        let serialized = serde_json::to_string(db_state)
+            .with_context(|| format!("Failed to serialize database:\n{db_state:?}\n"))?;
+
+        fs::write(&self.file_path, serialized)
+            .with_context(|| format!("Failed to write to path:\n{}\n", self.file_path))
     }
 }
 
@@ -36,7 +45,7 @@ mod tests {
             let db = JSONFileDatabase {
                 file_path: "INVALID_PATH".to_owned(),
             };
-            assert_eq!(db.read_db().is_err(), true);
+            assert!(db.read_db().is_err());
         }
 
         #[test]
@@ -56,7 +65,7 @@ mod tests {
 
             let result = db.read_db();
 
-            assert_eq!(result.is_err(), true);
+            assert!(result.is_err());
         }
 
         #[test]
@@ -76,7 +85,7 @@ mod tests {
 
             let result = db.read_db();
 
-            assert_eq!(result.is_ok(), true);
+            assert!(result.is_ok());
         }
 
         #[test]
@@ -121,7 +130,7 @@ mod tests {
             let write_result = db.write_db(&state);
             let read_result = db.read_db().unwrap();
 
-            assert_eq!(write_result.is_ok(), true);
+            assert!(write_result.is_ok());
             assert_eq!(read_result, state);
         }
     }
