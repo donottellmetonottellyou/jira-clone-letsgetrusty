@@ -50,3 +50,9 @@ pub struct DBState {
     pub epics: HashMap<u32, Epic>,
     pub stories: HashMap<u32, Story>,
 }
+impl DBState {
+    pub fn new_item_id(&mut self) -> u32 {
+        self.last_item_id += 1;
+        self.last_item_id
+    }
+}

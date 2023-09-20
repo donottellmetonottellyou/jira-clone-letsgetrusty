@@ -1,6 +1,6 @@
 use std::fs;
 
-use anyhow::{Context, Result};
+use anyhow::{anyhow, Context, Result};
 
 use crate::models::{DBState, Epic, Status, Story};
 
@@ -10,35 +10,107 @@ pub struct JiraDatabase {
 
 impl JiraDatabase {
     pub fn new(file_path: String) -> Self {
-        todo!()
+        Self {
+            database: Box::new(JSONFileDatabase { file_path }),
+        }
     }
 
     pub fn read_db(&self) -> Result<DBState> {
-        todo!()
+        self.database.read_db()
     }
 
     pub fn create_epic(&self, epic: Epic) -> Result<u32> {
-        todo!()
+        let mut db = self.read_db()?;
+
+        let epic_id = db.new_item_id();
+        db.epics.insert(epic_id, epic);
+
+        self.database.write_db(&db)?;
+
+        Ok(epic_id)
     }
 
     pub fn create_story(&self, story: Story, epic_id: u32) -> Result<u32> {
-        todo!()
+        let mut db = self.read_db()?;
+
+        let story_id = db.new_item_id();
+        db.stories.insert(story_id, story);
+
+        let epic = db
+            .epics
+            .get_mut(&epic_id)
+            .ok_or(anyhow!("Epic with id #{epic_id} not found."))?;
+        epic.stories.push(story_id);
+
+        self.database.write_db(&db)?;
+
+        Ok(story_id)
     }
 
     pub fn delete_epic(&self, epic_id: u32) -> Result<()> {
-        todo!()
+        let mut db = self.read_db()?;
+
+        let story_ids = &db
+            .epics
+            .get(&epic_id)
+            .ok_or(anyhow!("Epic with id #{epic_id} not found."))?
+            .stories;
+        for story_id in story_ids {
+            db.stories.remove(story_id);
+        }
+
+        db.epics.remove(&epic_id);
+
+        self.database.write_db(&db)
     }
 
     pub fn delete_story(&self, epic_id: u32, story_id: u32) -> Result<()> {
-        todo!()
+        let mut db = self.read_db()?;
+
+        db.stories
+            .remove(&story_id)
+            .map(|_| ())
+            .ok_or(anyhow!("Story with id #{story_id} not found."))?;
+
+        let epic = db
+            .epics
+            .get_mut(&epic_id)
+            .ok_or(anyhow!("Epic with id #{epic_id} not found."))?;
+        epic.stories.remove(
+            epic.stories
+                .iter()
+                .enumerate()
+                .find_map(|(i, e)| if *e == story_id { Some(i) } else { None })
+                .ok_or(anyhow!(
+                    "Epic #{epic_id} did not contain story #{story_id}."
+                ))?,
+        );
+
+        self.database.write_db(&db)
     }
 
     pub fn update_epic_status(&self, epic_id: u32, status: Status) -> Result<()> {
-        todo!()
+        let mut db = self.read_db()?;
+
+        let epic = db
+            .epics
+            .get_mut(&epic_id)
+            .ok_or(anyhow!("Epic with id #{epic_id} not found."))?;
+        epic.status = status;
+
+        self.database.write_db(&db)
     }
 
     pub fn update_story_status(&self, story_id: u32, status: Status) -> Result<()> {
-        todo!()
+        let mut db = self.read_db()?;
+
+        let story = db
+            .stories
+            .get_mut(&story_id)
+            .ok_or(anyhow!("Story with id #{story_id} not found."))?;
+        story.status = status;
+
+        self.database.write_db(&db)
     }
 }
 
