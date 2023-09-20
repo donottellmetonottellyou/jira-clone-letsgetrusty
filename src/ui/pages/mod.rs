@@ -1,6 +1,7 @@
 use std::rc::Rc;
 
 use anyhow::anyhow;
+use anyhow::Ok;
 use anyhow::Result;
 
 use crate::db::JiraDatabase;
@@ -41,7 +42,19 @@ impl Page for HomePage {
     }
 
     fn handle_input(&self, input: &str) -> Result<Option<Action>> {
-        todo!() // match against the user input and return the corresponding action. If the user input was invalid return None.
+        let input = input.trim();
+
+        match input {
+            "q" => return Ok(Some(Action::Exit)),
+            "c" => return Ok(Some(Action::CreateEpic)),
+            _ => {}
+        }
+
+        if let Result::Ok(epic_id) = input.parse() {
+            Ok(Some(Action::NavigateToEpicDetail { epic_id }))
+        } else {
+            Ok(None)
+        }
     }
 }
 
