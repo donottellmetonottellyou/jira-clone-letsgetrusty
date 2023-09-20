@@ -2,7 +2,6 @@ use std::rc::Rc;
 
 use anyhow::anyhow;
 use anyhow::Result;
-use itertools::Itertools;
 
 use crate::db::JiraDatabase;
 use crate::models::Action;
@@ -20,10 +19,18 @@ pub struct HomePage {
 }
 impl Page for HomePage {
     fn draw_page(&self) -> Result<()> {
-        println!("----------------------------- EPICS -----------------------------");
+        println!("----------------------------- EPICS ------------------------------");
         println!("     id     |               name               |      status      ");
 
-        // TODO: print out epics using get_column_string(). also make sure the epics are sorted by id
+        let db = self.db.read_db()?;
+        for (id, epic) in &db.epics {
+            println!(
+                "{}|{}|{}",
+                get_column_string(&format!("{id}"), 12),
+                get_column_string(&epic.name, 34),
+                get_column_string(&epic.status.to_string(), 18)
+            );
+        }
 
         println!();
         println!();
