@@ -126,7 +126,7 @@ mod tests {
             });
 
             let page = HomePage { db };
-            assert_eq!(page.draw_page().is_ok(), true);
+            assert!(page.draw_page().is_ok());
         }
 
         #[test]
@@ -136,7 +136,7 @@ mod tests {
             });
 
             let page = HomePage { db };
-            assert_eq!(page.handle_input("").is_ok(), true);
+            assert!(page.handle_input("").is_ok());
         }
 
         #[test]
@@ -191,7 +191,7 @@ mod tests {
                 .unwrap();
 
             let page = EpicDetail { epic_id, db };
-            assert_eq!(page.draw_page().is_ok(), true);
+            assert!(page.draw_page().is_ok());
         }
 
         #[test]
@@ -204,7 +204,7 @@ mod tests {
                 .unwrap();
 
             let page = EpicDetail { epic_id, db };
-            assert_eq!(page.handle_input("").is_ok(), true);
+            assert!(page.handle_input("").is_ok());
         }
 
         #[test]
@@ -214,7 +214,7 @@ mod tests {
             });
 
             let page = EpicDetail { epic_id: 999, db };
-            assert_eq!(page.draw_page().is_err(), true);
+            assert!(page.draw_page().is_err());
         }
 
         #[test]
@@ -298,7 +298,7 @@ mod tests {
                 story_id,
                 db,
             };
-            assert_eq!(page.draw_page().is_ok(), true);
+            assert!(page.draw_page().is_ok());
         }
 
         #[test]
@@ -319,7 +319,7 @@ mod tests {
                 story_id,
                 db,
             };
-            assert_eq!(page.handle_input("").is_ok(), true);
+            assert!(page.handle_input("").is_ok());
         }
 
         #[test]
@@ -340,7 +340,7 @@ mod tests {
                 story_id: 999,
                 db,
             };
-            assert_eq!(page.draw_page().is_err(), true);
+            assert!(page.draw_page().is_err());
         }
 
         #[test]
