@@ -22,8 +22,8 @@ impl Navigator {
         }
     }
 
-    pub fn get_current_page(&self) -> Option<&Box<dyn Page>> {
-        self.pages.last()
+    pub fn get_current_page(&self) -> Option<&dyn Page> {
+        self.pages.last().map(|page| page.as_ref())
     }
 
     pub fn handle_action(&mut self, action: Action) -> Result<()> {
@@ -125,7 +125,7 @@ mod tests {
         let current_page = nav.get_current_page().unwrap();
         let home_page = current_page.as_any().downcast_ref::<HomePage>();
 
-        assert_eq!(home_page.is_some(), true);
+        assert!(home_page.is_some());
     }
 
     #[test]
@@ -142,7 +142,7 @@ mod tests {
 
         let current_page = nav.get_current_page().unwrap();
         let epic_detail_page = current_page.as_any().downcast_ref::<EpicDetail>();
-        assert_eq!(epic_detail_page.is_some(), true);
+        assert!(epic_detail_page.is_some());
 
         nav.handle_action(Action::NavigateToStoryDetail {
             epic_id: 1,
@@ -153,21 +153,21 @@ mod tests {
 
         let current_page = nav.get_current_page().unwrap();
         let story_detail_page = current_page.as_any().downcast_ref::<StoryDetail>();
-        assert_eq!(story_detail_page.is_some(), true);
+        assert!(story_detail_page.is_some());
 
         nav.handle_action(Action::NavigateToPreviousPage).unwrap();
         assert_eq!(nav.get_page_count(), 2);
 
         let current_page = nav.get_current_page().unwrap();
         let epic_detail_page = current_page.as_any().downcast_ref::<EpicDetail>();
-        assert_eq!(epic_detail_page.is_some(), true);
+        assert!(epic_detail_page.is_some());
 
         nav.handle_action(Action::NavigateToPreviousPage).unwrap();
         assert_eq!(nav.get_page_count(), 1);
 
         let current_page = nav.get_current_page().unwrap();
         let home_page = current_page.as_any().downcast_ref::<HomePage>();
-        assert_eq!(home_page.is_some(), true);
+        assert!(home_page.is_some());
 
         nav.handle_action(Action::NavigateToPreviousPage).unwrap();
         assert_eq!(nav.get_page_count(), 0);
