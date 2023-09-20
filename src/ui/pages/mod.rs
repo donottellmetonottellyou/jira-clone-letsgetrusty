@@ -94,12 +94,14 @@ impl Page for EpicDetail {
         let stories = &db_state.stories;
 
         for (id, story) in stories {
-            println!(
-                "{}|{}|{}",
-                get_column_string(&id.to_string(), 12),
-                get_column_string(&story.name, 34),
-                get_column_string(&story.status.to_string(), 18)
-            );
+            if epic.stories.contains(id) {
+                println!(
+                    "{}|{}|{}",
+                    get_column_string(&id.to_string(), 12),
+                    get_column_string(&story.name, 34),
+                    get_column_string(&story.status.to_string(), 18)
+                );
+            }
         }
 
         println!();
