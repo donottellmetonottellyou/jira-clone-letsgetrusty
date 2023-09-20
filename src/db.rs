@@ -5,7 +5,7 @@ use anyhow::{anyhow, Context, Result};
 use crate::models::{DBState, Epic, Status, Story};
 
 pub struct JiraDatabase {
-    database: Box<dyn Database>,
+    pub database: Box<dyn Database>,
 }
 
 impl JiraDatabase {
@@ -114,7 +114,7 @@ impl JiraDatabase {
     }
 }
 
-trait Database {
+pub trait Database {
     fn read_db(&self) -> Result<DBState>;
     fn write_db(&self, db_state: &DBState) -> Result<()>;
 }
@@ -143,7 +143,7 @@ impl Database for JSONFileDatabase {
 
 #[cfg(test)]
 pub mod test_utils {
-    use std::{cell::RefCell, collections::HashMap};
+    use std::{cell::RefCell, collections::BTreeMap};
 
     use super::*;
 
@@ -156,8 +156,8 @@ pub mod test_utils {
             Self {
                 last_written_state: RefCell::new(DBState {
                     last_item_id: 0,
-                    epics: HashMap::new(),
-                    stories: HashMap::new(),
+                    epics: BTreeMap::new(),
+                    stories: BTreeMap::new(),
                 }),
             }
         }
@@ -440,7 +440,7 @@ mod tests {
     }
 
     mod database {
-        use std::collections::HashMap;
+        use std::collections::BTreeMap;
         use std::io::Write;
 
         use super::*;
@@ -520,10 +520,10 @@ mod tests {
                 stories: vec![2],
             };
 
-            let mut stories = HashMap::new();
+            let mut stories = BTreeMap::new();
             stories.insert(2, story);
 
-            let mut epics = HashMap::new();
+            let mut epics = BTreeMap::new();
             epics.insert(1, epic);
 
             let state = DBState {
