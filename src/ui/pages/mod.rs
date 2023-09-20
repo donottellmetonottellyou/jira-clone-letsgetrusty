@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{any::Any, rc::Rc};
 
 use anyhow::{anyhow, Ok, Result};
 
@@ -10,6 +10,7 @@ use page_helpers::*;
 pub trait Page {
     fn draw_page(&self) -> Result<()>;
     fn handle_input(&self, input: &str) -> Result<Option<Action>>;
+    fn as_any(&self) -> &dyn Any;
 }
 
 pub struct HomePage {
@@ -55,6 +56,10 @@ impl Page for HomePage {
             Ok(None)
         }
     }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
 }
 
 pub struct EpicDetail {
@@ -89,12 +94,14 @@ impl Page for EpicDetail {
         let stories = &db_state.stories;
 
         for (id, story) in stories {
-            println!(
-                "{}|{}|{}",
-                get_column_string(&id.to_string(), 12),
-                get_column_string(&story.name, 34),
-                get_column_string(&story.status.to_string(), 18)
-            );
+            if epic.stories.contains(id) {
+                println!(
+                    "{}|{}|{}",
+                    get_column_string(&id.to_string(), 12),
+                    get_column_string(&story.name, 34),
+                    get_column_string(&story.status.to_string(), 18)
+                );
+            }
         }
 
         println!();
@@ -138,6 +145,10 @@ impl Page for EpicDetail {
         } else {
             Ok(None)
         }
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 
@@ -186,6 +197,10 @@ impl Page for StoryDetail {
             })),
             _ => Ok(None),
         }
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 
