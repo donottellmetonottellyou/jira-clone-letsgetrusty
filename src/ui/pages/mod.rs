@@ -1,11 +1,8 @@
 use std::rc::Rc;
 
-use anyhow::anyhow;
-use anyhow::Ok;
-use anyhow::Result;
+use anyhow::{anyhow, Ok, Result};
 
-use crate::db::JiraDatabase;
-use crate::models::Action;
+use crate::{db::JiraDatabase, models::Action};
 
 mod page_helpers;
 use page_helpers::*;
@@ -42,8 +39,6 @@ impl Page for HomePage {
     }
 
     fn handle_input(&self, input: &str) -> Result<Option<Action>> {
-        let input = input.trim();
-
         match input {
             "q" => return Ok(Some(Action::Exit)),
             "c" => return Ok(Some(Action::CreateEpic)),
@@ -51,7 +46,11 @@ impl Page for HomePage {
         }
 
         if let Result::Ok(epic_id) = input.parse() {
-            Ok(Some(Action::NavigateToEpicDetail { epic_id }))
+            if self.db.read_db()?.epics.contains_key(&epic_id) {
+                Ok(Some(Action::NavigateToEpicDetail { epic_id }))
+            } else {
+                Ok(None)
+            }
         } else {
             Ok(None)
         }
@@ -107,8 +106,6 @@ impl Page for EpicDetail {
     }
 
     fn handle_input(&self, input: &str) -> Result<Option<Action>> {
-        let input = input.trim();
-
         match input {
             "p" => return Ok(Some(Action::NavigateToPreviousPage)),
             "u" => {
@@ -130,10 +127,14 @@ impl Page for EpicDetail {
         };
 
         if let Result::Ok(story_id) = input.parse() {
-            Ok(Some(Action::NavigateToStoryDetail {
-                epic_id: self.epic_id,
-                story_id,
-            }))
+            if self.db.read_db()?.stories.contains_key(&story_id) {
+                Ok(Some(Action::NavigateToStoryDetail {
+                    epic_id: self.epic_id,
+                    story_id,
+                }))
+            } else {
+                Ok(None)
+            }
         } else {
             Ok(None)
         }
@@ -174,8 +175,6 @@ impl Page for StoryDetail {
     }
 
     fn handle_input(&self, input: &str) -> Result<Option<Action>> {
-        let input = input.trim();
-
         match input {
             "p" => Ok(Some(Action::NavigateToPreviousPage)),
             "u" => Ok(Some(Action::UpdateStoryStatus {
