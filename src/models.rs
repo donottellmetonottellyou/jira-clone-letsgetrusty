@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fmt::Display};
+use std::{collections::BTreeMap, fmt::Display};
 
 use serde::{Deserialize, Serialize};
 
@@ -71,8 +71,8 @@ impl Story {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct DBState {
     pub last_item_id: u32,
-    pub epics: HashMap<u32, Epic>,
-    pub stories: HashMap<u32, Story>,
+    pub epics: BTreeMap<u32, Epic>,
+    pub stories: BTreeMap<u32, Story>,
 }
 impl DBState {
     pub fn new_item_id(&mut self) -> u32 {
